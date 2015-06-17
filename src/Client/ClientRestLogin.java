@@ -12,6 +12,8 @@ import java.awt.event.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 
+import server.ServerSubmit;
+
 public class ClientRestLogin extends JFrame implements ActionListener{
  
 	private BufferedImage img = null;
@@ -38,7 +40,7 @@ public class ClientRestLogin extends JFrame implements ActionListener{
         // 패널1
         // 이미지 받아오기
         try {
-            img = ImageIO.read(this.getClass().getResource("/img/login3.png"));
+            img = ImageIO.read(this.getClass().getResource("/img/login.png"));
         } catch (IOException e) {
             System.out.println("이미지 불러오기 실패");
             System.exit(0);
@@ -75,7 +77,7 @@ public class ClientRestLogin extends JFrame implements ActionListener{
         layeredPane.add(pwField);
         
        // 로그인버튼 추가
-        loginBt = new JButton(new ImageIcon(this.getClass().getResource("/img/btLogin_hud2.png")));
+        loginBt = new JButton(new ImageIcon(this.getClass().getResource("../img/btLogin_hud2.png")));
         loginBt.setBounds(321, 439, 104, 48);
         loginBt.setName("Login");
         
@@ -123,6 +125,7 @@ public class ClientRestLogin extends JFrame implements ActionListener{
     }
     
     public void actionPerformed(ActionEvent event) {
+    	if(loginBt.getName().equals("Login")){
     String id = idTextField.getText();
         char[] pass = pwField.getPassword();
         String password = new String(pass);
@@ -146,7 +149,7 @@ public class ClientRestLogin extends JFrame implements ActionListener{
             
         	String response = new String();
         	try{
-        		dataOut.writeUTF((restSelect.getSelectedIndex()+1)+"|"+idTextField.getText()+"|"+pwField.getText());
+        		dataOut.writeUTF(("Login"+"|"+restSelect.getSelectedIndex()+1)+"|"+idTextField.getText()+"|"+pwField.getText());
         		dataOut.flush();	
         	}
         	catch(Exception ee){
@@ -156,6 +159,7 @@ public class ClientRestLogin extends JFrame implements ActionListener{
             
         	try{
         		response=dataIn.readUTF();
+        		
             	}catch(Exception ee){
             	System.out.println("Receive Response Error!");
         	}
@@ -164,14 +168,15 @@ public class ClientRestLogin extends JFrame implements ActionListener{
                 // 로그인 성공일 경우
                 JOptionPane.showMessageDialog(null, "로그인 성공");
                 try{
-                System.out.println((restSelect.getSelectedIndex()+1)+"|"+idTextField.getText()+"|"+pwField.getText());
+                System.out.println(restSelect.getSelectedIndex()+"|"+idTextField.getText()+"|"+pwField.getText());
                 
                 }catch(Exception ee){
                 	System.out.println("ERROR");
                 }
                 ClientRestFrame frame = new ClientRestFrame();
-           
-                this.hide();
+                
+    		   this.hide();
+                
             } else {
                 // 로그인 실패일 경우
                 JOptionPane.showMessageDialog(null, "로그인 실패");
@@ -179,4 +184,5 @@ public class ClientRestLogin extends JFrame implements ActionListener{
  
         }
        }
+    }
 }

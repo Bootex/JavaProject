@@ -4,13 +4,18 @@ import java.awt.*;
 import java.awt.event.*;
 
 import java.awt.Toolkit;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.IOException;
+import java.net.Socket;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
 
 import javax.swing.*;
-
 
 
 public class ClientRestFrame extends JFrame implements ActionListener{
@@ -28,7 +33,10 @@ public class ClientRestFrame extends JFrame implements ActionListener{
 	
 	private JButton submitBt;
 
-	
+	private Socket socket;
+    private DataInputStream dataIn;
+    private DataOutputStream dataOut;
+    
 	public ClientRestFrame() {
     
         setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -132,13 +140,41 @@ public class ClientRestFrame extends JFrame implements ActionListener{
         add(layeredPane);
         
         submitBt.addActionListener(this);
+        
+        try{
+        	socket = new Socket("127.0.0.1",9999);
+        	dataIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+        	dataOut = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+        } catch(IOException ie){
+        	stop();
+        }
     } 
+	
+	public void stop(){
+    	try{
+    		dataIn.close();
+    		dataOut.close();
+    		socket.close();
+    	}
+    	catch(IOException e){
+    		System.out.println("STOP");
+    	}
+    }
+    
 	public void actionPerformed(ActionEvent e) {
-  
         if (submitBt.getText().equals("Submit")) {
-            // 메시지를 날린다.
-        			
-        	JOptionPane.showMessageDialog(null, "전송하였습니다.");	
+        	try{
+        	dataOut.writeUTF(("2"+"|"+tableSelect.getSelectedIndex()+1)+
+        			"|"+memberSelect.getSelectedIndex()+
+        			"|"+menuText.getText()+
+        			"|"+timeText.getText()+
+        			"|"+memoArea.getText());
+        	dataOut.flush();
+        	}catch(Exception ie){		
+        		System.out.println("IO ERROR!");
+        	}
+        	
+        	JOptionPane.showMessageDialog(null, "전송하였습니다.");	    // 메시지를 날린다.
         	}
             
         

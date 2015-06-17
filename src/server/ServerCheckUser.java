@@ -6,13 +6,15 @@ import java.util.*;
 
 public class ServerCheckUser implements Runnable{
 	protected Socket socket;
-
 	public ServerCheckUser(Socket socket){
 		this.socket = socket;
 	}
 
 	   protected DataInputStream dataIn;
 	   protected DataOutputStream dataOut;
+	   
+	   protected DataInputStream dataSubmitIn;
+	   
 	   protected Thread listener;
 
 	   public synchronized void init() {
@@ -20,9 +22,10 @@ public class ServerCheckUser implements Runnable{
 		         try {
 		         // 소켓으로부터 입력스트림을 획득.
 		            dataIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+		            dataSubmitIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
 		            // 소켓으로부터 출력스트림을 획득.
 		            dataOut = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
-		            // listener 스레드를 생성하고 시작.
+		                    // listener 스레드를 생성하고 시작.
 		            listener = new Thread(this);
 		            listener.start();
 		         } catch (IOException ignored) {
@@ -55,14 +58,20 @@ public class ServerCheckUser implements Runnable{
 		      try {         
 		         while (!Thread.interrupted()) {
 		            String message = dataIn.readUTF();
-		            try {
+		            System.out.println("A:"+message);
+		       
+		        try {
 		               
 		      // 이 프로그램에서는 생성된 소켓을 가지고 스트림을 구성하였으며 
 		      // 클라이언트 에서 보내어진 자료를 한 줄씩 읽어 들이는 작업 수행.
 		      // 구분자 “|”를 가지는 StringTokenizer형 객체를 생성합니다.
 		         StringTokenizer stk = new StringTokenizer(message, "|");
 		      // nextToken() 메소드를 이용해 파싱한 토큰으로 각 변수에 대입
-		         String rest_name = stk.nextToken();
+		         String state= stk.nextToken();
+	
+		         System.out.println("state:"+state+state.equals("Submit"));                
+		if(state.equals("Login")){
+			   String rest_name = stk.nextToken();
 		         String id= stk.nextToken();
 		         String pwd= stk.nextToken();
 		        
@@ -70,13 +79,9 @@ public class ServerCheckUser implements Runnable{
 		      // 화면에 출력할 때마다 새로운 Date 클래스를 생성하여 클라이언트가 정보를 보낸 시간을 동시에 출력 시키는 역할 수행
 		         System.out.println("id : "+id +"pwd : " +pwd);
 		    
-		         /*     
-		         dataOut.writeUTF("correct");
-		         dataOut.flush();
-		     */
+		      
 		     if(id.equals("admin")&&pwd.equals("1111")){
 		    	  	dataOut.writeUTF("correct");
-		    	 
 		     }
 		      else{
 		    	  dataOut.writeUTF("Incorrect");
@@ -87,7 +92,28 @@ public class ServerCheckUser implements Runnable{
 		         System.out.println(pdate.toString());
 		         System.out.println("식당 이름 : " + rest_name);
 		         System.out.println("아이디 : " + id);
-		      } catch (NoSuchElementException e) {
+		            }
+        System.out.println("state:!!!"+state.equals("Submit"));                
+		
+		if(state=="1"){
+	         String rest_name = stk.nextToken();
+	         String tableNum= stk.nextToken();
+	         String member= stk.nextToken();
+	         String menu= stk.nextToken();
+	         String time= stk.nextToken();
+	         String memo= stk.nextToken();
+			        
+	      // 서버에 클라이언트가 보내온 정보를 화면에 출력.
+	      // 화면에 출력할 때마다 새로운 Date 클래스를 생성하여 클라이언트가 정보를 보낸 시간을 동시에 출력 시키는 역할 수행
+	         System.out.println("name : "+rest_name +
+	        		 "pwd : " +tableNum+
+	        		 "member:"+member+
+	        		 "menu:" + menu+
+	        		 "time:" + time +
+	        		 "memo:" + memo);
+
+		}
+		            } catch (NoSuchElementException e) {
 		               stop();
 		         }
 		      }
@@ -98,19 +124,6 @@ public class ServerCheckUser implements Runnable{
 		   catch (IOException ie) {
 		         if (listener == Thread.currentThread())
 		            ie.printStackTrace();
-		   } finally {
-		         stop();
-		      }
 		   }
-	   
-	   void getData(){
-		   try{
-		   pdate = new Date();
-	         System.out.println(pdate.toString());
-	         System.out.println("식당 이름 : " );
-	         System.out.println("아이디 : ");
-	      } catch (NoSuchElementException eA) {
-	        stop();
-	      }
-	   }
+		   }
 }
