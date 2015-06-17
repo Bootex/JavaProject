@@ -4,14 +4,13 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
+import java.net.*;
  
 import java.awt.event.*;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
-
 
 public class ClientRestLogin extends JFrame implements ActionListener{
  
@@ -20,6 +19,11 @@ public class ClientRestLogin extends JFrame implements ActionListener{
     private JPasswordField pwField;
     private JButton loginBt;
     private JComboBox restSelect;
+    
+    private Socket socket;
+    private DataInputStream dataIn;
+    private DataOutputStream dataOut;
+    
     // 생성자
     public ClientRestLogin() {
         setTitle("식당 예약 프로그램");
@@ -69,11 +73,12 @@ public class ClientRestLogin extends JFrame implements ActionListener{
         
         pwField.setBorder(javax.swing.BorderFactory.createEmptyBorder());
         layeredPane.add(pwField);
- 
-        // 로그인버튼 추가
+        
+       // 로그인버튼 추가
         loginBt = new JButton(new ImageIcon(this.getClass().getResource("/img/btLogin_hud2.png")));
         loginBt.setBounds(321, 439, 104, 48);
- 
+        loginBt.setName("Login");
+        
         // 버튼 투명처리
         loginBt.setBorderPainted(false);
         loginBt.setFocusPainted(false);
@@ -89,6 +94,15 @@ public class ClientRestLogin extends JFrame implements ActionListener{
         layeredPane.add(loginPanel);
         add(layeredPane);
         setVisible(true);
+        
+        
+        try{
+        	socket = new Socket("127.0.0.1",9999);
+        	dataIn = new DataInputStream(new BufferedInputStream(socket.getInputStream()));
+        	dataOut = new DataOutputStream(new BufferedOutputStream(socket.getOutputStream()));
+        } catch(IOException ie){
+        	stop();
+        }
     }
  
     class MyPanel extends JPanel {
@@ -97,9 +111,19 @@ public class ClientRestLogin extends JFrame implements ActionListener{
         }
     }
     
+    public void stop(){
+    	try{
+    		dataIn.close();
+    		dataOut.close();
+    		socket.close();
+    	}
+    	catch(IOException e){
+    		System.out.println("STOP");
+    	}
+    }
     
-    public void actionPerformed(ActionEvent e) {
-        String id = idTextField.getText();
+    public void actionPerformed(ActionEvent event) {
+    String id = idTextField.getText();
         char[] pass = pwField.getPassword();
         String password = new String(pass);
  
@@ -119,12 +143,32 @@ public class ClientRestLogin extends JFrame implements ActionListener{
         } else {
  
             // 로그인 참 거짓 여부를 판단
-            boolean existLogin=true;
             
+        	String response = new String();
+        	try{
+        		dataOut.writeUTF((restSelect.getSelectedIndex()+1)+"|"+idTextField.getText()+"|"+pwField.getText());
+        		dataOut.flush();	
+        	}
+        	catch(Exception ee){
+            	System.out.println("Send Info Error!");
+            }
+        	
+            
+        	try{
+        		response=dataIn.readUTF();
+            	}catch(Exception ee){
+            	System.out.println("Receive Response Error!");
+        	}
  
-            if (existLogin) {
+            if (response.equals("correct")) {
                 // 로그인 성공일 경우
                 JOptionPane.showMessageDialog(null, "로그인 성공");
+                try{
+                System.out.println((restSelect.getSelectedIndex()+1)+"|"+idTextField.getText()+"|"+pwField.getText());
+                
+                }catch(Exception ee){
+                	System.out.println("ERROR");
+                }
                 ClientRestFrame frame = new ClientRestFrame();
            
                 this.hide();
@@ -134,7 +178,5 @@ public class ClientRestLogin extends JFrame implements ActionListener{
             }
  
         }
-        password = null;
- 
-    }
+       }
 }

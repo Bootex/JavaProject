@@ -20,7 +20,7 @@ public class FrameMakeTable extends JPanel {
      
     public FrameMakeTable(int numSeat) {
         this.numSeat = numSeat;
-        img("tableEmpty3");
+        img("tableEmpty");
         setLayout(null);
  
         JPanel panImg = new InnerPanel();

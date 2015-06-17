@@ -6,5 +6,4 @@ public class ClientMain {
 		// TODO Auto-generated method stub
 		ClientRestLogin test= new ClientRestLogin();
 	}
-
 }
